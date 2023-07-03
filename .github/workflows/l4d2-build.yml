@@ -1,17 +1,9 @@
 name: l4d2-build
 
 on:
-  push:
-    branches:
-      - master
-    paths-ignore:
-      - LICENSE
-      - README.md
-  pull_request:
-    paths-ignore:
-      - LICENSE
-      - README.md
-
+  repository_dispatch:
+  workflow_dispatch:
+  
 jobs:
   build:
     name: build with mms${{ matrix.mm_version }} on ${{ matrix.os_short }}
@@ -44,15 +36,14 @@ jobs:
           sudo dpkg --add-architecture i386
           sudo apt-get update
           sudo apt-get install -y clang g++-multilib
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-
+          
       - name: Checking out MM:Source
         uses: actions/checkout@v3
         with:
           repository: alliedmodders/metamod-source
           ref: ${{ matrix.mm_branch }}
           path: metamod-${{ matrix.mm_version }}
+          submodules: recursive
 
       - name: Setting up Python
         uses: actions/setup-python@v4
@@ -70,12 +61,16 @@ jobs:
           repository: alliedmodders/hl2sdk
           ref: l4d2
           path: hl2sdk-l4d2
+          submodules: recursive
 
       - name: Checking out own repository
         uses: actions/checkout@v3
         with:
+          repository: accelerator74/l4dtoolz
+          ref: master
           path: src
-
+          submodules: recursive
+          
       - name: Compiling ${{ github.event.repository.name }} files
         working-directory: src
         run: |
